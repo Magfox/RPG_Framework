@@ -64,20 +64,21 @@ public:
 	// Вызывается когда изменяется адреналин персонажа
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnAdrenalineChanged(float DeltaValue, AActor* Causer);
-	
 	// Вызывается когда изменяются очки опыта персонажа
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnXPChanged(float DeltaValue);
 	// Вызывается когда персонаж повышает уровень
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnCharacterLeveledUp();
-	
 
 	
 	// Вызывается когда персонаж умирает 
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnDead();
-	
+
+	// Активация способности ближнего боя 
+	UFUNCTION(BlueprintCallable, Category = "RPG Abilities|Melee")
+	bool ActivateMeleeAbility(bool AllowRemoteActivation = true);
 
 	
 protected:
@@ -91,24 +92,35 @@ protected:
 	UPROPERTY()
 	class URPGAttributeSet* AttributeSet;
 	// Уровень персонажа
-	UPROPERTY(EditAnywhere, Category = "RPG Abilities")
+	UPROPERTY(EditAnywhere, Category = "RPG Attributes")
 	int32 CharacterLevel;
-	// Эффект, применяемый по умолчанию для инициализации атрибутов
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "RPG Abilities")
-	TSubclassOf<class UGameplayEffect> DefaultAttributeEffect;
+	// Атрибуты эффектов по умолчанию (здоровье, стамина, адреналин и т.д.)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "RPG Attributes")
+	TArray<TSubclassOf<class UGameplayEffect>> DefaultAttributeEffect;
 
 
 
 	
 	
 	// Флаг для включения тестовых способностей
-	UPROPERTY(EditAnywhere, Category = "RPG Abilities|Debug")
+	UPROPERTY(EditAnywhere, Category = "RPG Attributes|Debug")
 	bool EnableTestAbilities;
 	// Тестовые способности для отладки
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "RPG Abilities|Debug")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "RPG Attributes|Debug")
 	TArray<TSubclassOf<class UGameplayAbility>> TestAbilities;
 	// Функция для установки тестовых способностей
-	virtual void SetTestAbilities(); 
+	virtual void SetTestAbilities();
+
+
+	
+	// Способность ближнего боя выбирается по классу в редакторе 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "RPG Abilities|Melee")
+	TSubclassOf<class UGameplayAbility> MeleeAbility; 
+	// Хэндл спецификации способности ближнего боя
+	UPROPERTY()
+	FGameplayAbilitySpecHandle MeleeAbilitySpecHandle;
+	// Функция для установки способности ближнего боя
+	virtual void SetMeleeAbility();
 	
 public:	
 	// Called every frame

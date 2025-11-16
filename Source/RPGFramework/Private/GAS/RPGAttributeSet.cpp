@@ -42,9 +42,10 @@ void URPGAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectMod
 	}
 	// Если изменился атрибут стамины
 	if (Data.EvaluatedData.Attribute == GetStaminaAttribute()) 
-	{
+	{	// Проверка на переполнение стамины
+		bool StaminaOverflow = GetStamina() > GetMaxStamina() ? FMath::IsNearlyEqual(GetStamina() - DeltaValue, GetMaxStamina()) : false; // Если текущая стамина превышает максимальную то bool становится true 
 		SetStamina(FMath::Clamp(GetStamina(), 0.0f, GetMaxStamina())); // Ограничение значения стамины между 0 и максимальным стамины
-		if (RPGCharacter) // Если персонаж RPG валиден
+		if (RPGCharacter && !StaminaOverflow) // Если персонаж RPG валиден и не было переполнения стамины
 		{
 			RPGCharacter->HandleStaminaChanged(DeltaValue, Data.EffectSpec.GetContext().GetInstigator()); // Вызов обработчика изменения здоровья персонажа 
 		}

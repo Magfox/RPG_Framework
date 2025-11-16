@@ -121,6 +121,15 @@ bool ARPGCharacter::ActivateAbilitiesWithTag(FGameplayTagContainer AbilityTags, 
 	return AbilitySystemComponent->TryActivateAbilitiesByTag(AbilityTags, AllowRemoteActivation); // Попытка активации способностей с заданными тегами
 }
 
+// Активация способности ближнего боя
+bool ARPGCharacter::ActivateMeleeAbility(bool AllowRemoteActivation)
+{
+	if (!AbilitySystemComponent || !MeleeAbilitySpecHandle.IsValid()) // Проверка наличия компонента системы способностей и валидности хэндла способности ближнего боя
+	{
+		return false;
+	}
+	return AbilitySystemComponent->TryActivateAbility(MeleeAbilitySpecHandle); // Попытка активации способности ближнего боя
+}
 
 // Called when the game starts or when spawned
 void ARPGCharacter::BeginPlay()
@@ -139,10 +148,22 @@ void ARPGCharacter::SetTestAbilities()
 	{
 		for (TSubclassOf<UGameplayAbility>& TestAbility : TestAbilities) // Итерация по тестовым способностям
 		{
-			AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(TestAbility, GetCharacterLevel(), INDEX_NONE)); // Добавление способности в систему способностей
+			AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(TestAbility, GetCharacterLevel(), INDEX_NONE, this)); // Добавление способности в систему способностей
 		}
 	}
 	
+}
+// Функция для установки способности ближнего боя
+void ARPGCharacter::SetMeleeAbility()
+{
+	if (!AbilitySystemComponent)
+	{
+		return;
+	}
+	/* Проверка роли сервера и наличия способности ближнего боя
+	 * @param MeleeAbility - Способность ближнего боя для установки
+	 */
+	MeleeAbilitySpecHandle = AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(MeleeAbility, GetCharacterLevel(), INDEX_NONE, this)); // Добавление способности в систему способностей
 }
 
 // Called every frame
@@ -174,6 +195,8 @@ void ARPGCharacter::PossessedBy(AController* NewController)
 	}
 	
 	ApplyDefaultAttributesEffects(); // Применение атрибутов по умолчанию
+	SetMeleeAbility(); // Установка способности ближнего боя
+	
 }
 
 // Реализация интерфейса IAbilitySystemInterface
@@ -223,12 +246,16 @@ void ARPGCharacter::ApplyDefaultAttributesEffects()
 	// Создание контекста эффекта
 	FGameplayEffectContextHandle EffectContext = AbilitySystemComponent->MakeEffectContext();
 	EffectContext.AddSourceObject(this); // Установка источника эффекта
-	// Создание спецификации эффекта для инициализации атрибутов
-	FGameplayEffectSpecHandle NewHandle = AbilitySystemComponent->MakeOutgoingSpec(DefaultAttributeEffect, CharacterLevel, EffectContext);
-	// Применение эффекта к самому себе для инициализации атрибутов
-	if (NewHandle.IsValid()) // Проверка валидности спецификации эффекта
+	// Применение каждого эффекта из массива DefaultAttributeEffect
+	for (TSubclassOf<class UGameplayEffect>& DefaultEffect : DefaultAttributeEffect)
 	{
-		FActiveGameplayEffectHandle ActiveHandle = AbilitySystemComponent->ApplyGameplayEffectSpecToTarget(*NewHandle.Data.Get(), AbilitySystemComponent); 
+		// Создание спецификации эффекта для инициализации атрибутов
+		FGameplayEffectSpecHandle NewHandle = AbilitySystemComponent->MakeOutgoingSpec(DefaultEffect, CharacterLevel, EffectContext);
+		// Применение эффекта к самому себе для инициализации атрибутов
+		if (NewHandle.IsValid()) // Проверка валидности спецификации эффекта
+		{
+			FActiveGameplayEffectHandle ActiveHandle = AbilitySystemComponent->ApplyGameplayEffectSpecToTarget(*NewHandle.Data.Get(), AbilitySystemComponent); // Применение эффекта к цели
+		}
 	}
 }
 // Функция для удаления атрибутов по умолчанию (здоровье, стамина, адреналин и т.д.)
