@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -8,15 +8,17 @@
 #include "GameFramework/Character.h"
 #include "RPGCharacter.generated.h"
 
+
 UCLASS()
-class RPGFRAMEWORK_API ARPGCharacter : public ACharacter, public IAbilitySystemInterface
+class RPGFRAMEWORK_API ARPGCharacter : public ACharacter, public IAbilitySystemInterface, public IGameplayTagAssetInterface 
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this character's properties
 	ARPGCharacter();
-
+	
+	
 	// Получение уровня персонажа
 	UFUNCTION(BlueprintCallable, Category = "RPG Attributes")
 	virtual int32 GetCharacterLevel() const;
@@ -44,7 +46,7 @@ public:
 	// Получение максимальных очков опыта персонажа
 	UFUNCTION(BlueprintCallable, Category = "RPG Attributes")
 	virtual float GetMaxExperiencePoints() const;
-
+	
 
 	
 	// Активация способностей с заданными тегами
@@ -160,7 +162,5 @@ public:
 	virtual void ApplyDefaultAttributesEffects();
 	// Функция для удаления атрибутов по умолчанию (здоровье, стамина, адреналин и т.д.)
 	virtual void RemoveDefaultAttributesEffects();
-
-	
-	
+	void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const;
 };

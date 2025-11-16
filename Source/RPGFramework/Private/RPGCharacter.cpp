@@ -18,6 +18,11 @@ ARPGCharacter::ARPGCharacter()
 	CharacterLevel = 1;
 	
 }
+
+
+
+
+
 // Получение уровня персонажа
 int32 ARPGCharacter::GetCharacterLevel() const
 {
@@ -111,6 +116,9 @@ float ARPGCharacter::GetMaxExperiencePoints() const
 	// Возврат текущего значения максимального очков опыта если набор атрибутов существует
 	return AttributeSet->GetMaxExperiencePoints();
 }
+
+
+
 // Активация способностей с заданными тегами
 bool ARPGCharacter::ActivateAbilitiesWithTag(FGameplayTagContainer AbilityTags, bool AllowRemoteActivation)
 {
@@ -312,4 +320,15 @@ void ARPGCharacter::RemoveDefaultAttributesEffects()
 	Query.EffectSource = this; // Установка источника эффекта как текущий объект
 	AbilitySystemComponent->RemoveActiveEffects(Query); // Удаление всех активных эффектов
 }
+
+
+void ARPGCharacter::GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const
+{
+	if (AbilitySystemComponent)
+	{
+		AbilitySystemComponent->GetOwnedGameplayTags(TagContainer);
+	}
+}
+
+
 
