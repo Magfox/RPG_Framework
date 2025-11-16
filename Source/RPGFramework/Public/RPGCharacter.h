@@ -79,7 +79,15 @@ public:
 	// Активация способности ближнего боя 
 	UFUNCTION(BlueprintCallable, Category = "RPG Abilities|Melee")
 	bool ActivateMeleeAbility(bool AllowRemoteActivation = true);
-
+	// Получение активных способностей с заданными тегами
+	UFUNCTION(BlueprintCallable, Category = "RPG Abilities")
+	virtual void GetActiveAbilitiesWithTags(FGameplayTagContainer AbilityTags, TArray<UGameplayAbility*>& ActiveAbilities, bool MatchExactTag);
+	// Применение игрового эффекта к персонажу
+	UFUNCTION(BlueprintCallable, Category = "RPG Abilities")
+	virtual  void ApplyGameplayEffect(TSubclassOf<UGameplayEffect> GameplayEffect);
+	// Проверка возможности применения игрового эффекта к персонажу
+	UFUNCTION(BlueprintCallable, Category = "RPG Abilities")
+	virtual bool CanApplyGameplayEffect(TSubclassOf<UGameplayEffect> GameplayEffect);
 	
 protected:
 	// Called when the game starts or when spawned

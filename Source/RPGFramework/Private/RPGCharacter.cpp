@@ -131,6 +131,53 @@ bool ARPGCharacter::ActivateMeleeAbility(bool AllowRemoteActivation)
 	return AbilitySystemComponent->TryActivateAbility(MeleeAbilitySpecHandle); // Попытка активации способности ближнего боя
 }
 
+void ARPGCharacter::GetActiveAbilitiesWithTags(FGameplayTagContainer AbilityTags,
+	TArray<UGameplayAbility*>& ActiveAbilities, bool MatchExactTag)
+{
+	if (!AbilitySystemComponent)
+	{
+		return;
+	}
+	TArray<FGameplayAbilitySpec*> MatchingAbilities; // Массив для хранения соответствующих способностей
+	AbilitySystemComponent->GetActivatableGameplayAbilitySpecsByAllMatchingTags(AbilityTags, MatchingAbilities, MatchExactTag); // Получение всех активируемых способностей, соответствующих заданным тегам
+	for (FGameplayAbilitySpec* Spec : MatchingAbilities) // Итерация по соответствующим способностям
+	{
+		TArray<UGameplayAbility*> AbilityInstances = Spec->GetAbilityInstances(); // Получение экземпляров способности из спецификации
+		for (UGameplayAbility* ActiveAbility : AbilityInstances) // Итерация по экземплярам способности
+		{
+			ActiveAbilities.Add(ActiveAbility); // Добавление активной способности в выходной массив
+		}
+	}
+}
+// Применение игрового эффекта к персонажу
+void ARPGCharacter::ApplyGameplayEffect(TSubclassOf<UGameplayEffect> GameplayEffect)
+{
+	if (!AbilitySystemComponent || !GameplayEffect)
+	{
+		return;
+	}
+	// Создание контекста эффекта
+	FGameplayEffectContextHandle EffectContext = AbilitySystemComponent->MakeEffectContext();
+	EffectContext.AddSourceObject(this); // Установка источника эффекта
+	FGameplayEffectSpecHandle NewHandle = AbilitySystemComponent->MakeOutgoingSpec(GameplayEffect, CharacterLevel, EffectContext); // Создание спецификации эффекта
+	if (NewHandle.IsValid())
+	{
+		FActiveGameplayEffectHandle ActiveHandle = AbilitySystemComponent->ApplyGameplayEffectSpecToTarget(*NewHandle.Data.Get(), AbilitySystemComponent); // Применение эффекта к цели
+	}
+	
+}
+// Проверка возможности применения игрового эффекта к персонажу
+bool ARPGCharacter::CanApplyGameplayEffect(TSubclassOf<UGameplayEffect> GameplayEffect)
+{
+	if (!AbilitySystemComponent || !GameplayEffect)
+	{
+		return false;
+	}
+	FGameplayEffectContextHandle EffectContext = AbilitySystemComponent->MakeEffectContext(); // Создание контекста эффекта
+	EffectContext.AddSourceObject(this); // Установка источника эффекта
+	return AbilitySystemComponent->CanApplyAttributeModifiers(GameplayEffect->GetDefaultObject<UGameplayEffect>(), CharacterLevel, EffectContext); // Проверка возможности применения модификаторов атрибутов эффекта
+}
+
 // Called when the game starts or when spawned
 void ARPGCharacter::BeginPlay()
 {
