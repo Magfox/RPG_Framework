@@ -238,6 +238,8 @@ void ARPGCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 void ARPGCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
+	TeamId = FGenericTeamId(Fraction); // Установка идентификатора команды на основе фракции персонажа
+	
 	// Проверка наличия компонента системы способностей
 	if (!AbilitySystemComponent)
 	{
@@ -328,6 +330,11 @@ void ARPGCharacter::GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) co
 	{
 		AbilitySystemComponent->GetOwnedGameplayTags(TagContainer);
 	}
+}
+// Реализация интерфейса IGenericTeamAgentInterface
+FGenericTeamId ARPGCharacter::GetGenericTeamId() const
+{
+	return TeamId; // Возврат идентификатора команды персонажа
 }
 
 

@@ -4,13 +4,26 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
+#include "GenericTeamAgentInterface.h" 
 #include "GAS/RPGAttributeSet.h"
 #include "GameFramework/Character.h"
 #include "RPGCharacter.generated.h"
 
+// Перечисление для фракций персонажей
+UENUM(BlueprintType)
+enum EFraction : int
+{
+	Friends = 0,
+	Enemies = 1,
+	Civilians = 255
+};
 
 UCLASS()
-class RPGFRAMEWORK_API ARPGCharacter : public ACharacter, public IAbilitySystemInterface, public IGameplayTagAssetInterface 
+class RPGFRAMEWORK_API ARPGCharacter : // Основной класс персонажа RPG
+	public ACharacter, // Базовый класс персонажа Unreal Engine
+	public IAbilitySystemInterface, // Интерфейс для системы способностей
+	public IGenericTeamAgentInterface, // Интерфейс для системы команд
+	public IGameplayTagAssetInterface  // Интерфейс для работы с игровыми тегами
 {
 	GENERATED_BODY()
 
@@ -131,6 +144,15 @@ protected:
 	FGameplayAbilitySpecHandle MeleeAbilitySpecHandle;
 	// Функция для установки способности ближнего боя
 	virtual void SetMeleeAbility();
+
+
+	
+	// Фракция персонажа для системы команд
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Team)
+	TEnumAsByte<EFraction> Fraction = EFraction::Civilians; // По умолчанию персонаж является гражданским
+
+	FGenericTeamId TeamId; // Идентификатор команды персонажа
+	
 	
 public:	
 	// Called every frame
@@ -162,5 +184,11 @@ public:
 	virtual void ApplyDefaultAttributesEffects();
 	// Функция для удаления атрибутов по умолчанию (здоровье, стамина, адреналин и т.д.)
 	virtual void RemoveDefaultAttributesEffects();
+	// Реализация интерфейса IGameplayTagAssetInterface (Как будто можно вырезать)
 	void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const;
+
+	// Реализация интерфейса IGenericTeamAgentInterface
+	virtual FGenericTeamId GetGenericTeamId() const override;
+
+	
 };
